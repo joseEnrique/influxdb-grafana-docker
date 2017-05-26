@@ -1,0 +1,36 @@
+version: '2'
+
+volumes:
+    influxdb: {}
+    grafana_data: {}
+
+networks:
+  influxdb-net:
+    driver: bridge
+
+services:
+  influxdb:
+    image: influxdb:latest
+    container_name: influxdb
+    ports:
+      - "8083:8083"
+      - "8086:8086"
+      - "8090:8090"
+    volumes:
+      - influxdb:/var/lib/influxdb
+    networks:
+      - influxdb-net
+  grafana:
+    image: grafana/grafana:latest
+    depends_on:
+      - influxdb
+    ports:
+      - 3000:3000
+    volumes:
+      - grafana_data:/var/lib/grafana
+    env_file:
+      - config.monitoring
+    networks:
+      - influxdb-net
+    links:
+      - influxdb:influxdb
